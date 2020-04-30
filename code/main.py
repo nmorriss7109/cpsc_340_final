@@ -29,9 +29,6 @@ if __name__ == '__main__':
         X, y = train_set
         Xtest, ytest = test_set
 
-        binarizer = LabelBinarizer()
-        Y = binarizer.fit_transform(y)
-
         def evaluate_model(model, n):
             model.fit(X,y)
             y_pred = model.predict(Xtest[:n])
@@ -40,7 +37,7 @@ if __name__ == '__main__':
 
         model = KNN(5)
         print("K-nearest neighbours")
-        evaluate_model(model, n=500) #classify first n test examples
+        evaluate_model(model, n=10000) #classify first n test examples
 
     elif question == "2": #Linear regression
         with gzip.open(os.path.join('..', 'data', 'mnist.pkl.gz'), 'rb') as f:
@@ -48,15 +45,12 @@ if __name__ == '__main__':
         X, y = train_set
         Xtest, ytest = test_set
 
-        binarizer = LabelBinarizer()
-        Y = binarizer.fit_transform(y)
-
         def evaluate_model(model):
             model.fit(X,y)
             y_pred = model.predict(Xtest)
             te_error = np.mean(y_pred != ytest)
             print("Testing error: %.3f" % te_error)
-
+        # Basic least squares linear regression model
         model = LeastSquares()
         evaluate_model(model)
 
@@ -70,11 +64,11 @@ if __name__ == '__main__':
         Y = binarizer.fit_transform(y)
 
         def evaluate_model(model):
-            model.fit(X,Y)
+            model.fit(X,Y)  #Here we use the binarized label matrix Y
             y_pred = model.predict(Xtest)
             te_error = np.mean(y_pred != ytest)
             print("Testing error: %.3f" % te_error)
-
+        #SVM (no kernel) -- a possible improvement would be to use a kernel
         model = SVM()
         evaluate_model(model)
 
@@ -88,11 +82,13 @@ if __name__ == '__main__':
         Y = binarizer.fit_transform(y)
 
         def evaluate_model(model):
-            model.fit(X,Y)
+            model.fit(X,Y)  #Here we use the binarized label matrix Y
             y_pred = model.predict(Xtest)
             te_error = np.mean(y_pred != ytest)
             print("Testing error: %.3f" % te_error)
 
+        # Create a multi-layer perceptron with 200 nodes in the first hiddel layer
+        #       and 100 in the second
         model = MLP([200, 100])
         evaluate_model(model)
 
@@ -102,17 +98,18 @@ if __name__ == '__main__':
         X, y = train_set
         Xtest, ytest = test_set
 
-        binarizer = LabelBinarizer()
-        Y = binarizer.fit_transform(y)
-
         def evaluate_model(model):
 
-            model.fit(X,y)
-            y_pred = model.predict(Xtest[:50])
+            #model.fit(X,y)
+            y_pred = model.predict(Xtest, read_from_file=True)
             print(y_pred)
-            te_error = np.mean(y_pred != ytest[:50])
+            te_error = np.mean(y_pred != ytest)
             print("Testing error: %.3f" % te_error)
 
+        #Create a convolutional neural net. The filtering and pooling hyper-parameters
+        #       are baked into the CNN. An improvement would be to make the class more generalizable
+        #       by allowing the user to change the number of convolution layers, pooling layers, filter size, etc
+        #       Note: The majority of the CNN code was copied from the web (details inside cnn.py)
         model = CNN()
         evaluate_model(model)
 

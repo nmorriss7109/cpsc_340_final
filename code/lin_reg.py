@@ -6,10 +6,18 @@ import math
 # Ordinary Least Squares
 class LeastSquares:
     def fit(self,X,y):
-        #self.w = solve(X.T@X, X.T@y)
+        n, d = X.shape
+        v = np.ones((n,1))
+        #add bias
+        X = np.hstack((v, X))
+        print(X)
         self.w = pinv(X.T@X)@X.T@y
 
     def predict(self, X):
+        n, d = X.shape
+        v = np.ones((n,1))
+        #add bias
+        X = np.hstack((v, X))
         sol = X@self.w
-        #return [round(x, 0) for x in sol]
+        #convert a regression to a classification (note: this doesn't really work)
         return [int(x) for x in sol]

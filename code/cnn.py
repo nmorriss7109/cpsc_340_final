@@ -1,6 +1,15 @@
+#########################################################################
+###################     DISCLAIMER      #################################
+#########################################################################
+# The majority of the code in this file was copied, then modified to work with
+# main.py. I also wrote my own predict function using the code from the conv function,
+# The source for the code is: https://github.com/Alescontrela/Numpy-CNN
+#                         and https://towardsdatascience.com/convolutional-neural-networks-from-the-ground-up-c67bb41454e1
+
 import pickle
 import numpy as np
 from tqdm import tqdm
+from progress_bar import printProgressBar
 
 def extract_data(filename, num_images, IMAGE_WIDTH):
     '''
@@ -107,6 +116,8 @@ def softmax(raw_preds):
     return out/np.sum(out)
 
 def categoricalCrossEntropy(y, y_hat):
+    #print(y, y_hat)
+    #print(y * np.log(y_hat))
     return -np.sum(y * np.log(y_hat))
 
 def convolutionBackward(dconv_prev, conv_in, filt, s):
@@ -194,12 +205,14 @@ def conv(image, label, params, conv_s, pool_f, pool_s):
     out = w4.dot(z) + b4 # second dense layer
 
     probs = softmax(out) # predict class probabilities with the softmax activation function
+    #print(probs)
+    #print(label)
 
     ################################################
     #################### Loss ######################
     ################################################
 
-    loss = categoricalCrossEntropy(probs, label) # categorical cross-entropy loss
+    loss = categoricalCrossEntropy(label, probs) # categorical cross-entropy loss
 
     ################################################
     ############# Backward Operation ###############
@@ -278,7 +291,7 @@ def adamGD(batch, num_classes, lr, dim, n_c, beta1, beta2, params, cost):
         # Collect Gradients for training example
         grads, loss = conv(x, y, params, 1, 2, 2)
         [df1_, df2_, dw3_, dw4_, db1_, db2_, db3_, db4_] = grads
-
+        #print(loss)
         df1+=df1_
         db1+=db1_
         df2+=df2_
@@ -388,8 +401,8 @@ class CNN():
             for x,batch in enumerate(t):
                 self.params, cost = adamGD(batch, self.num_classes, self.lr, self.img_dim, self.img_depth, self.beta1, self.beta2, self.params, cost)
                 t.set_description("Cost: %.2f" % (cost[-1]))
-                if x == 0:
-                    break
+                # if x == 2:
+                #    break
 
 
         with open(self.save_path, 'wb') as file:
@@ -398,10 +411,14 @@ class CNN():
         #print(self.params)
         return cost
 
-    def predict(self, X, conv_s=1, pool_f=2, pool_s=2):
-        ret = np.zeros((1, X.shape[0]))
+    def predict(self, X, conv_s=1, pool_f=2, pool_s=2, read_from_file=False):
+        ret = []
         for i, image in enumerate(X):
-            print(i)
+            printProgressBar(self, iteration=i + 1, total=X.shape[0], prefix = 'Progress:', suffix = '   |   Example #: ')
+            if read_from_file:
+                #print(pickle.load(open(self.save_path, 'rb')))
+                self.params = pickle.load(open(self.save_path, 'rb'))
+
             [f1, f2, w3, w4, b1, b2, b3, b4] = self.params
 
             #image-= np.mean(image)
@@ -429,7 +446,8 @@ class CNN():
             out = w4.dot(z) + b4 # second dense layer
 
             probs = softmax(out) # predict class probabilities with the softmax activation
-
-            np.insert(ret, np.argmax(probs), i)
+            #print(probs)
+            prediction = np.argmax(probs)
+            ret.append(prediction)
 
         return ret

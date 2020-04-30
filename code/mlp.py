@@ -76,28 +76,6 @@ class MLP():
 
         return f, g
 
-    # def fit(self, X, y):
-    #     if y.ndim == 1:
-    #         y = y[:,None]
-    #
-    #     self.layer_sizes = [X.shape[1]] + self.hidden_layer_sizes + [y.shape[1]]
-    #     self.classification = y.shape[1]>1 # assume it's classification iff y has more than 1 column
-    #
-    #     # random init
-    #     scale = 0.01
-    #     weights = list()
-    #     for i in range(len(self.layer_sizes)-1):
-    #         W = scale * np.random.randn(self.layer_sizes[i+1],self.layer_sizes[i])
-    #         b = scale * np.random.randn(1,self.layer_sizes[i+1])
-    #         weights.append((W,b))
-    #     weights_flat = flatten_weights(weights)
-    #
-    #
-    #     # utils.check_gradient(self, X, y, len(weights_flat), epsilon=1e-6)
-    #     weights_flat_new, f = findMin.findMin(self.funObj, weights_flat, self.max_iter, X, y, verbose=True, alpha=1.)
-    #
-    #     self.weights = unflatten_weights(weights_flat_new, self.layer_sizes)
-
     def fit(self, X, y, maxEpochs=500):
         n, d = X.shape
 
